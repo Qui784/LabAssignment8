@@ -27,10 +27,81 @@ size_t Size(void* ptr)
 	return ((size_t*)ptr)[-1];
 }
 
+void merge(int arr[], int l, int m, int r)
+{
+	int i, j, k;
+	int n1 = m - l + 1;
+	int n2 = r - m;
+
+	//	temp arrays
+	int *L = (int*)Alloc(n1*sizeof(int));
+	int *R = (int*)Alloc(n2*sizeof(int));
+
+	//	copy data into temp arrays
+	for (i = 0; i < n1; i++)
+		L[i] = arr[l + i];
+
+	for (j = 0; j < n2; j++)
+		R[j] = arr[m + 1+ j];
+
+	// Merge the temp arrays back into arr
+	i = 0; // Initial index of first subarray
+	j = 0; // Initial index of second subarray
+	k = l; // Initial index of merged subarray
+
+	while (i < n1 && j < n2)
+	{
+		if (L[i] <= R[j])
+		{
+			arr[k] = L[i];
+			i++;
+		}
+		else
+		{
+			arr[k] = R[j];
+			j++;
+		}
+		k++;
+	}
+
+	//	copy remaining elements of L
+	while (i < n1)
+	{
+		arr[k] = L[i];
+		i++;
+		k++;
+	}
+
+	//	copy remaining elements of R
+	while (j < n2)
+	{
+		arr[k] = R[j];
+		j++;
+		k++;
+	}
+
+	//	free memory
+	DeAlloc(L);
+	DeAlloc(R);
+}
+
 // implement merge sort
 // extraMemoryAllocated counts bytes of extra memory allocated
 void mergeSort(int pData[], int l, int r)
 {
+	if (l < r)
+	{
+		int mid = (l + r)/2;
+
+		//	call merge sort on first half
+		mergeSort(pData, l, mid);
+
+		//	merge sort on second half
+		mergeSort(pData, mid+1, r);
+
+		//	merge sorted halves
+		merge(pData, l, mid, r);
+	}
 }
 
 // parses input file to an integer array
@@ -67,12 +138,15 @@ int parseData(char *inputFileName, int **ppData)
 // prints first and last 100 items in the data array
 void printArray(int pData[], int dataSz)
 {
-	int i, sz = dataSz - 100;
+	int i, sz = (dataSz > 100 ? dataSz - 100 : 0);
+	int firstHundred = (dataSz < 100 ? dataSz : 100);
 	printf("\tData:\n\t");
-	for (i=0;i<100;++i)
+
+	for (i=0;i<firstHundred;++i)
 	{
 		printf("%d ",pData[i]);
 	}
+
 	printf("\n\t");
 	
 	for (i=sz;i<dataSz;++i)
@@ -81,6 +155,7 @@ void printArray(int pData[], int dataSz)
 	}
 	printf("\n\n");
 }
+
 
 int main(void)
 {
